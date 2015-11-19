@@ -12,7 +12,7 @@ public class Main {
             @Override
             public void run() {
                 JFrame frame = new MainFrame();
-                frame.setSize(300,400);
+                frame.setSize(480,640);
                 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 frame.setTitle("E-media projekt nr 1, Arnold Woznica");
                 frame.setVisible(true);
