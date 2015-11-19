@@ -12,22 +12,29 @@ import java.io.File;
  * Created by Arnold on 2015-11-12.
  */
 public class MainFrame extends JFrame {
+    private static final int DEFAULT_WIDTH = 640;
+    private static final int DEFAULT_HEIGHT = 640;
+
     private JFileChooser fileChooser;
     private String filePath;
     private BufferedImage graph;
 
     private JDialog aboutDialog;
     private JTextArea textArea;
-    private GraphPanel centerPanel;
-    private JPanel leftPanel;
+    private JLabel pictureLabel;
+    private JPanel panel;
     private JButton showGraphButton;
+    private JButton showPictureButton;
 
 
     public MainFrame() {
-        createFileChooser("Pliki wav", "wav");
+        createFileChooser("Pliki png", "png");
         createMenu();
-        this.add(leftPanel = new InfoButtonPanel(), BorderLayout.EAST);
-        this.add(centerPanel = new GraphPanel(), BorderLayout.CENTER);
+        this.add(panel = new InfoButtonPanel(), BorderLayout.EAST);
+        pictureLabel = new JLabel();
+        JScrollPane pictureScrollPane = new JScrollPane(pictureLabel);
+        this.add(pictureScrollPane, BorderLayout.CENTER);
+        pack();
     }
 
 
@@ -63,17 +70,18 @@ public class MainFrame extends JFrame {
     }
 
 
-    private class GraphPanel extends JPanel {
-
-    }
-
     private class InfoButtonPanel extends JPanel {
         public InfoButtonPanel() {
             setLayout(new BorderLayout());
             add(new JScrollPane(textArea = new JTextArea(10, 15)), BorderLayout.CENTER);
-            add(showGraphButton = new JButton("Show Graph"), BorderLayout.SOUTH);
+            JPanel buttonPanel = new JPanel();
+            buttonPanel.add(showPictureButton = new JButton("Show picture"));
+            buttonPanel.add(showGraphButton = new JButton("Show Graph"));
+            add(buttonPanel,BorderLayout.SOUTH);
+            showPictureButton.setEnabled(false);
             showGraphButton.setEnabled(false);
-            showGraphButton.addActionListener(new ShowGraphAction());
+            showPictureButton.addActionListener(new ShowPictureAction());
+            //showGraphButton.addActionListener(new ShowGraphAction());
             textArea.setEnabled(false);
         }
     }
@@ -100,6 +108,13 @@ public class MainFrame extends JFrame {
 
     }
 
+    private class ShowPictureAction implements ActionListener{
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            pictureLabel.setIcon(new ImageIcon(filePath));
+        }
+    }
+
     private class ShowInfoAction implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -109,12 +124,7 @@ public class MainFrame extends JFrame {
         }
     }
 
-    private class ShowGraphAction implements ActionListener {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            //trzeba uzupelnic
-        }
-    }
+
 
 
     private class OpenFileAction implements ActionListener {
@@ -125,6 +135,7 @@ public class MainFrame extends JFrame {
             {
                 if (result == JFileChooser.APPROVE_OPTION) {
                     graph = null;
+                    showPictureButton.setEnabled(true);
                     showGraphButton.setEnabled(true);
                     filePath = fileChooser.getSelectedFile().getPath();
                     textArea.append("File:" + '\n' + filePath + '\n');
@@ -141,5 +152,8 @@ public class MainFrame extends JFrame {
         }
     }
 
-
+    @Override
+    public Dimension getPreferredSize() {
+        return new Dimension(DEFAULT_WIDTH,DEFAULT_HEIGHT);
+    }
 }
