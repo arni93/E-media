@@ -82,7 +82,7 @@ public class PNGProcesser {
         tmp.copyTo(q2);
         //and the last step is normalizing of  image and convert to 1-channel unsigned byte
         magnitude.convertTo(magnitude, CvType.CV_8UC1);
-        Core.normalize(magnitude,magnitude);
+        Core.normalize(magnitude, magnitude,0,255, Core.NORM_MINMAX, CvType.CV_8UC1);
 
         return toBufferedImage(magnitude);
     }
