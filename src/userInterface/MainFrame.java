@@ -1,5 +1,7 @@
 package userInterface;
 
+import imageProcessing.PNGProcesser;
+
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
@@ -7,22 +9,25 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 
 /**
+ *
  * Created by Arnold on 2015-11-12.
  */
 public class MainFrame extends JFrame {
     private static final int DEFAULT_WIDTH = 640;
     private static final int DEFAULT_HEIGHT = 640;
 
-    private JFileChooser fileChooser;
+
     private String filePath;
     private BufferedImage graph;
+    private Image picture;
 
+    private JFileChooser fileChooser;
     private JDialog aboutDialog;
     private JTextArea textArea;
     private JLabel pictureLabel;
-    private JPanel panel;
     private JButton showGraphButton;
     private JButton showPictureButton;
 
@@ -30,9 +35,11 @@ public class MainFrame extends JFrame {
     public MainFrame() {
         createFileChooser("Pliki png", "png");
         createMenu();
+        JPanel panel;
         this.add(panel = new InfoButtonPanel(), BorderLayout.EAST);
         pictureLabel = new JLabel();
         JScrollPane pictureScrollPane = new JScrollPane(pictureLabel);
+        pictureLabel.setHorizontalAlignment(JLabel.CENTER);
         this.add(pictureScrollPane, BorderLayout.CENTER);
         pack();
     }
@@ -69,6 +76,11 @@ public class MainFrame extends JFrame {
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
     }
 
+    @Override
+    public Dimension getPreferredSize() {
+        return new Dimension(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+    }
+
 
     private class InfoButtonPanel extends JPanel {
         public InfoButtonPanel() {
@@ -77,12 +89,13 @@ public class MainFrame extends JFrame {
             JPanel buttonPanel = new JPanel();
             buttonPanel.add(showPictureButton = new JButton("Show picture"));
             buttonPanel.add(showGraphButton = new JButton("Show Graph"));
-            add(buttonPanel,BorderLayout.SOUTH);
+            add(buttonPanel, BorderLayout.SOUTH);
             showPictureButton.setEnabled(false);
             showGraphButton.setEnabled(false);
             showPictureButton.addActionListener(new ShowPictureAction());
-            //showGraphButton.addActionListener(new ShowGraphAction());
+            showGraphButton.addActionListener(new ShowGraphAction());
             textArea.setEnabled(false);
+            textArea.setDisabledTextColor(Color.BLACK);
         }
     }
 
@@ -108,10 +121,17 @@ public class MainFrame extends JFrame {
 
     }
 
-    private class ShowPictureAction implements ActionListener{
+    private class ShowPictureAction implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            pictureLabel.setIcon(new ImageIcon(filePath));
+            pictureLabel.setIcon(new ImageIcon(picture));
+        }
+    }
+
+    private class ShowGraphAction implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            pictureLabel.setIcon(new ImageIcon(graph));
         }
     }
 
@@ -124,9 +144,6 @@ public class MainFrame extends JFrame {
         }
     }
 
-
-
-
     private class OpenFileAction implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -135,12 +152,21 @@ public class MainFrame extends JFrame {
             {
                 if (result == JFileChooser.APPROVE_OPTION) {
                     graph = null;
+                    picture = null;
                     showPictureButton.setEnabled(true);
                     showGraphButton.setEnabled(true);
                     filePath = fileChooser.getSelectedFile().getPath();
-                    textArea.append("File:" + '\n' + filePath + '\n');
+                    try {
+                        picture = Toolkit.getDefaultToolkit().createImage(filePath);
+                        PNGProcesser pngProcesser = new PNGProcesser(filePath);
+                        graph = pngProcesser.getImageFFT(filePath);
+                        textArea.setText("File:" + '\n' + filePath + '\n');
+                        textArea.append(pngProcesser.getHeaderDescription());
+                    } catch (IOException exception) {
+                        JOptionPane.showMessageDialog(MainFrame.this, "IOException occured," +
+                                "wrong file format or file damaged");
+                    }
                 }
-
             }
         }
     }
@@ -150,10 +176,5 @@ public class MainFrame extends JFrame {
         public void actionPerformed(ActionEvent e) {
             System.exit(0);
         }
-    }
-
-    @Override
-    public Dimension getPreferredSize() {
-        return new Dimension(DEFAULT_WIDTH,DEFAULT_HEIGHT);
     }
 }
